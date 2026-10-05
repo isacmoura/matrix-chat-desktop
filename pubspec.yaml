@@ -1,0 +1,27 @@
+name: matrix_desktop
+description: "Cliente desktop para o protocolo Matrix com Flutter e Rust."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+  matrix_desktop_rust:
+    path: rust_builder
+  flutter_rust_bridge: 2.12.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

@@ -3,13 +3,14 @@
 ## Estado atual
 
 - [x] Arquitetura e decisões iniciais propostas.
-- [ ] Projeto Flutter/Rust.
-- [ ] Integração Flutter Rust Bridge.
+- [x] Projeto Flutter/Rust.
+- [x] Integração Flutter Rust Bridge validada no macOS.
 - [ ] Login real no Matrix.
 - [ ] Persistência/restauração real de sessão.
 - [ ] Lista de salas e timeline reais.
 - [ ] Envio real de mensagens.
-- [ ] Testes automatizados e CI.
+- [x] Testes automatizados iniciais em Flutter e Rust.
+- [ ] CI.
 
 ## Limitações intencionais
 

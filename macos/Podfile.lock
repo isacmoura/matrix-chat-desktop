@@ -1,0 +1,22 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - matrix_desktop_rust (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - matrix_desktop_rust (from `Flutter/ephemeral/.symlinks/plugins/matrix_desktop_rust/macos`)
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  matrix_desktop_rust:
+    :path: Flutter/ephemeral/.symlinks/plugins/matrix_desktop_rust/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  matrix_desktop_rust: b8ce9b5c6f7dc51f330994408d2f28fa7413692e
+
+PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
+
+COCOAPODS: 1.16.2

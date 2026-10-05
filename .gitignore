@@ -7,10 +7,12 @@
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
-.fvm/flutter_sdk
+.fvm/
 .packages
 .pub-cache/
 .pub/
+.idea/
+*.iml
 build/
 coverage/
 lib/generated_plugin_registrant.dart
