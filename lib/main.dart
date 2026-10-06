@@ -7,6 +7,12 @@ Future<void> main() async {
 
   final gateway = FrbMatrixGateway();
   await gateway.initialize();
+  final matrixSdkStatus = await gateway.watchMatrixSdkStatus().first;
 
-  runApp(MatrixDesktopApp(bridgeStatus: gateway.bridgeStatus()));
+  runApp(
+    MatrixDesktopApp(
+      bridgeStatus: gateway.bridgeStatus(),
+      matrixSdkStatus: matrixSdkStatus,
+    ),
+  );
 }

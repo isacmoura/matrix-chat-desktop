@@ -9,11 +9,16 @@ void main() {
   testWidgets('calls Rust through the gateway', (tester) async {
     final gateway = FrbMatrixGateway();
     await gateway.initialize();
+    final matrixSdkStatus = await gateway.watchMatrixSdkStatus().first;
 
     await tester.pumpWidget(
-      MatrixDesktopApp(bridgeStatus: gateway.bridgeStatus()),
+      MatrixDesktopApp(
+        bridgeStatus: gateway.bridgeStatus(),
+        matrixSdkStatus: matrixSdkStatus,
+      ),
     );
 
     expect(find.text('Ponte Flutter–Rust pronta'), findsOneWidget);
+    expect(find.text('Matrix SDK 0.19.1 • SDK UI 0.19.1'), findsOneWidget);
   });
 }

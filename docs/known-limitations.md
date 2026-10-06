@@ -5,6 +5,7 @@
 - [x] Arquitetura e decisões iniciais propostas.
 - [x] Projeto Flutter/Rust.
 - [x] Integração Flutter Rust Bridge validada no macOS.
+- [x] Compatibilidade entre `matrix-sdk` e `matrix-sdk-ui` validada.
 - [ ] Login real no Matrix.
 - [ ] Persistência/restauração real de sessão.
 - [ ] Lista de salas e timeline reais.

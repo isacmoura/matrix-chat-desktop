@@ -8,6 +8,7 @@ será implementada em Rust por meio do Matrix Rust SDK e do Flutter Rust Bridge.
 - Flutter 3.22.2, gerenciado pelo [FVM](https://fvm.app/).
 - Rust stable.
 - Flutter Rust Bridge Codegen 2.12.0.
+- Matrix Rust SDK e Matrix SDK UI 0.19.1.
 - Ferramentas nativas da plataforma de destino.
 
 O `cargo`, o `rustc` e o `rustup` precisam estar disponíveis no `PATH`. Em uma

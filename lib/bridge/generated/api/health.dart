@@ -6,4 +6,30 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These functions are ignored because they are not marked as `pub`: `matrix_sdk_versions`
+
 String bridgeStatus() => RustLib.instance.api.crateApiHealthBridgeStatus();
+
+Stream<MatrixSdkVersions> watchMatrixSdkVersions() =>
+    RustLib.instance.api.crateApiHealthWatchMatrixSdkVersions();
+
+class MatrixSdkVersions {
+  final String matrixSdk;
+  final String matrixSdkUi;
+
+  const MatrixSdkVersions({
+    required this.matrixSdk,
+    required this.matrixSdkUi,
+  });
+
+  @override
+  int get hashCode => matrixSdk.hashCode ^ matrixSdkUi.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MatrixSdkVersions &&
+          runtimeType == other.runtimeType &&
+          matrixSdk == other.matrixSdk &&
+          matrixSdkUi == other.matrixSdkUi;
+}

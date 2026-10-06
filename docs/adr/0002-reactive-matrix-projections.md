@@ -14,9 +14,12 @@ e estados de envio de uma sala.
 
 ## Decisão
 
-Usar matrix-sdk-ui para a lista de salas e a timeline, desde que seja possível compilar suas versões em conjunto com matrix-sdk e expor uma atualização básica ao Flutter por meio do Flutter Rust Bridge.
+Usar `matrix-sdk-ui` 0.19.1 para a lista de salas e a timeline, em conjunto com
+`matrix-sdk` 0.19.1.
 
-A camada de integração em Rust assina as atualizações produzidas pelo SDK, converte seus tipos internos em modelos estáveis da aplicação e os expõe ao Flutter como streams tipados por meio do Flutter Rust Bridge.
+A camada de integração em Rust assina as atualizações produzidas pelo SDK,
+converte seus tipos internos em modelos estáveis da aplicação e os expõe ao
+Flutter como streams tipados por meio do Flutter Rust Bridge.
 
 Serão expostas atualizações relacionadas a:
 
@@ -24,6 +27,17 @@ Serão expostas atualizações relacionadas a:
 - estado da sincronização;
 - resumos das salas;
 - itens e estados de envio da timeline da sala ativa.
+
+## Validação
+
+A compatibilidade foi confirmada com Rust 1.97.1 e Flutter Rust Bridge 2.12.0.
+Os testes feitos foram:
+
+- compilar `matrix-sdk` e `matrix-sdk-ui` na mesma biblioteca Rust;
+- confirmar que as duas dependências resolvem para a versão 0.19.1;
+- habilitar criptografia e SQLite embarcado;
+- transportar um DTO por um stream Rust → Dart;
+- executar o smoke test nativo no macOS.
 
 ## Consequências
 
