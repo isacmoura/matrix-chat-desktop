@@ -1,37 +1,35 @@
 # Limitações conhecidas e itens não concluídos
 
-## Estado atual
+## Estado da entrega
 
-- [x] Arquitetura e decisões iniciais propostas.
-- [x] Projeto Flutter/Rust.
-- [x] Integração Flutter Rust Bridge validada no macOS.
-- [x] Compatibilidade entre `matrix-sdk` e `matrix-sdk-ui` validada.
-- [x] Camada Rust de autenticação por senha, persistência segura e restauração
-  implementada.
-- [x] Autenticação integrada ao Flutter (`MatrixGateway`, `AuthRepository`,
-  `AuthCubit`, tela de login, restauração na inicialização e logout).
-- [ ] Login real contra um homeserver Matrix de teste.
-- [ ] Validação do Keychain e dos backends Windows/Linux em execução de ponta a
-  ponta.
-- [ ] Lista de salas e timeline reais.
-- [ ] Envio real de mensagens.
-- [x] Testes automatizados iniciais em Flutter e Rust.
-- [ ] CI.
+- [x] Cliente Flutter desktop com bridge Flutter–Rust.
+- [x] Login, persistência segura, restauração de sessão e logout.
+- [x] Sincronização, lista de salas, timeline e envio de mensagens de texto.
+- [x] Testes unitários/widget no Flutter, testes unitários no Rust e smoke test
+  nativo do bridge.
+- [x] Teste manual autenticado contra um homeserver Matrix real.
+- [ ] Teste de ponta a ponta para salas, timeline e envio com uma conta Matrix
+  de teste.
+- [ ] Validação de runtime no Windows e Linux.
+- [ ] Integração contínua.
 
-## Limitações intencionais
+## Limitações funcionais
 
-- Somente mensagens de texto.
-- Uma timeline ativa por vez.
-- Sem criação, convite ou administração de salas.
-- Sem Spaces, threads, reações, edição ou remoção de mensagens.
-- Sem upload/download de anexos.
-- Sem chamadas de voz/vídeo.
-- Sem notificações nativas.
-- Sem múltiplas contas simultâneas.
-- Sem sincronização completa de preferências.
-- Fluxos avançados de criptografia e verificação de dispositivos podem ser
-  exibidos como limitação se não forem validados de ponta a ponta.
+- A aplicação trata somente mensagens de texto simples.
+- Não há criação, convite ou administração de salas.
+- Não há Spaces, threads, reações, edição, remoção, anexos ou chamadas.
+- Há uma única conta ativa por vez.
+- A interface não expõe estado de envio, retry de mensagem nem status detalhado
+  de reconexão.
+- O logout remove os segredos do credential store e encerra a sessão remota em
+  melhor esforço, mas não remove fisicamente o SQLite local. Sem a passphrase
+  removida, esse banco não pode ser reaberto pela aplicação.
+- Fluxos avançados de criptografia, como verificação de dispositivos e salas
+  criptografadas em um cenário real, não foram validados de ponta a ponta.
 
 ## Plataformas
 
-Esta aplicação foi **desenvolvida e testada em macOS**. No entanto, a compatibilidade com outros sistemas operacionais como Windows e Linux foi mantida.
+O desenvolvimento e as verificações automatizadas foram realizados no macOS.
+Flutter, Rust e as configurações do projeto preservam o destino Windows/Linux,
+mas esses sistemas ainda exigem validação de execução e do respectivo
+credential store.

@@ -8,14 +8,15 @@ Lista de salas, timeline, sincronização e envio são fluxos contínuos. Consul
 periódicas iniciadas pelo Flutter criariam duplicação de estado e risco de
 race conditions.
 
-O `matrix-sdk-ui` oferece APIs de alto nível voltadas à interface, incluindo
-`RoomListService`, baseado em Sliding Sync, e `Timeline`, que representa os itens
-e estados de envio de uma sala.
+O `matrix-sdk-ui` oferece APIs de alto nível voltadas à interface. Nesta
+entrega, `SyncService` mantém o cliente sincronizado e `Timeline` representa os
+itens de uma sala. A lista é projetada a partir das salas carregadas pelo
+`matrix-sdk` e de seu `rooms_stream`.
 
 ## Decisão
 
-Usar `matrix-sdk-ui` 0.19.1 para a lista de salas e a timeline, em conjunto com
-`matrix-sdk` 0.19.1.
+Usar `matrix-sdk-ui` 0.19.1 para sincronização e timeline, em conjunto com
+`matrix-sdk` 0.19.1. Não usar `RoomListService` nesta primeira entrega.
 
 A camada de integração em Rust assina as atualizações produzidas pelo SDK,
 converte seus tipos internos em modelos estáveis da aplicação e os expõe ao
@@ -26,7 +27,7 @@ Serão expostas atualizações relacionadas a:
 - sessão e autenticação;
 - estado da sincronização;
 - resumos das salas;
-- itens e estados de envio da timeline da sala ativa.
+- itens da timeline da sala ativa.
 
 ## Validação
 
@@ -43,7 +44,7 @@ Os testes feitos foram:
 
 ### Positivas
 
-- Evita reimplementar regras complexas de ordenação, deltas e estado de envio.
+- Evita reimplementar a sincronização e a projeção de itens de timeline.
 - Mantém uma única fonte de verdade no Rust.
 - Permite atualização incremental da UI.
 
@@ -52,3 +53,4 @@ Os testes feitos foram:
 - `matrix-sdk-ui` evolui rapidamente e precisa ser versionado junto com o SDK.
 - Streams exigem cancelamento e tratamento explícito de reconexão.
 - Testes precisam controlar eventos assíncronos deterministamente.
+- O estado visual de envio e retry permanece fora do escopo atual.

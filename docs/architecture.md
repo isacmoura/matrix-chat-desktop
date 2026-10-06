@@ -1,216 +1,93 @@
 # Arquitetura
 
-## Objetivo
+## Princípio central
 
-Entregar um cliente Matrix desktop pequeno, testável e evolutivo, respeitando a
-restrição central do desafio: toda interação com o protocolo Matrix acontece no
-lado Rust por meio do Matrix Rust SDK. Flutter conhece apenas contratos próprios
-da aplicação e nunca importa conceitos internos do SDK.
-
-A arquitetura privilegia um fluxo vertical funcional em vez de uma divisão
-excessiva em camadas. O domínio inicial é simples; use cases só devem surgir
-quando houver orquestração reutilizada ou complexa.
-
-## Visão geral
+O Flutter não acessa o protocolo Matrix diretamente. O Rust contém o
+`matrix_sdk::Client`, persiste a sessão, mantém a sincronização e projeta os
+dados do SDK em DTOs pequenos. Flutter trabalha somente com esses DTOs por meio
+do Flutter Rust Bridge (FRB).
 
 ```mermaid
 flowchart LR
-    View[Flutter Views] --> VM[Feature Cubits / ViewModels]
-    VM --> Repo[Repository contracts]
+    UI[Flutter: páginas e Cubits] --> Repo[Repositórios]
     Repo --> Gateway[MatrixGateway]
     Gateway --> FRB[Flutter Rust Bridge]
-    FRB --> API[Rust public API]
-    API --> Service[MatrixClientService]
-    Service --> SDKUI[matrix-sdk-ui projections]
-    SDKUI --> SDK[Matrix Rust SDK Client]
-    SDK --> HS[Matrix homeserver]
-    Service --> Store[(SQLite SDK store)]
-    Service --> Secrets[OS credential store]
-
-    SDKUI -. room/sync/timeline events .-> API
-    API -. typed streams .-> FRB
-    FRB -. Dart Streams .-> Gateway
-    Gateway -. immutable app models .-> Repo
-    Repo -. state .-> VM
-    VM -. render .-> View
+    FRB --> API[Rust: api/auth, api/rooms, api/timeline]
+    API --> SDKUI[matrix-sdk-ui: SyncService e Timeline]
+    API --> SDK[matrix-sdk: Client]
+    SDK --> HS[Homeserver Matrix]
+    SDK --> SQLite[SQLite local]
+    API --> Keyring[Credential store do SO]
 ```
 
-## Responsabilidades
-
-### Flutter — presentation
-
-- Renderizar as telas e componentes.
-- Manter estado de interface por feature.
-- Validar campos no nível de experiência do usuário.
-- Mapear comandos do usuário para contratos de repository.
-- Assinar streams e cancelar assinaturas no ciclo de vida correto.
-- **Não deve interpretar eventos Matrix brutos nem implementar sincronização.**
-
-Estrutura:
+## Organização do código
 
 ```text
 lib/
-  app/
-    app.dart
-    app_dependencies.dart
-    app_session.dart
-  core/
-    errors/
-    models/
+  app/                         composição da aplicação e tema
   bridge/
-    generated/          # somente código gerado pelo FRB
-    matrix_gateway.dart # facade sobre o código gerado
+    generated/                 código FRB gerado, não editar
+    matrix_gateway.dart        fachada Dart sobre a ponte
+  core/models/                 modelos da aplicação
   features/
-    auth/
-      data/
-      presentation/
-    rooms/
-      data/
-      presentation/
-    timeline/
-      data/
-      presentation/
+    auth/                      autenticação e estado da sessão
+    rooms/                     lista de salas e timeline
+
+rust/src/
+  api/auth.rs                  cliente, sessão segura e SyncService
+  api/rooms.rs                 projeção e stream de salas
+  api/timeline.rs              projeção, stream e envio de texto
+  api/health.rs                smoke test da ponte
+  frb_generated.rs             código FRB gerado, não editar
 ```
 
-O código gerado pelo Flutter Rust Bridge permanece isolado em `bridge/generated`.
-Widgets, Cubits e repositories dependem de `MatrixGateway`, nunca diretamente das
-classes geradas.
+## Fronteira Flutter–Rust
 
-### Rust — protocolo e estado Matrix
+`MatrixGateway` é a única dependência de infraestrutura usada no Dart. Ele
+traduz os tipos gerados pelo FRB em `SessionState`, `RoomSummary` e
+`TimelineMessage`. `AuthRepository` e `RoomRepository` dependem dessa fachada;
+widgets e cubits não importam arquivos em `bridge/generated`.
 
-- Construir e possuir uma única instância de `matrix_sdk::Client` por sessão.
-- Autenticar, restaurar sessão e encerrar a sessão.
-- Configurar o armazenamento persistente usado pelo SDK.
-- Iniciar, observar e encerrar as tarefas de sincronização.
-- Projetar salas e eventos em DTOs pequenos e estáveis para Flutter.
-- Enviar mensagens e propagar seu estado local/remoto.
-- Traduzir erros do SDK para uma taxonomia controlada da aplicação.
+O contrato expõe comandos para inicializar autenticação, login, restauração,
+logout e envio de texto. Os estados de autenticação, a lista de salas e a
+timeline chegam ao Flutter como streams. Ao desmontar os cubits, as assinaturas
+Dart são canceladas.
 
-Estrutura:
+## Sessão e dados locais
 
-```text
-rust/
-  Cargo.toml
-  src/
-    api/                 # contrato público consumido pelo FRB
-      auth.rs
-      rooms.rs
-      timeline.rs
-    client/
-      service.rs         # dono do Client e das tarefas
-      session.rs
-      sync.rs
-    mapping/             # SDK/Ruma -> DTOs da aplicação
-    model/               # DTOs e erros expostos na ponte
-    storage/
-      paths.rs
-      secrets.rs
-    lib.rs
-```
+No login, o Rust cria o `Client` com store SQLite no diretório privado informado
+pelo Flutter e uma passphrase aleatória. O token de acesso, refresh token e a
+passphrase ficam serializados no credential store do sistema operacional pela
+crate `keyring`; a senha do usuário não é persistida.
 
-## Contrato Flutter <–> Rust
+Ao restaurar uma sessão, a aplicação lê esses dados, reabre o mesmo SQLite,
+restaura o `MatrixSession` e inicia o `SyncService`. A atualização do token pelo
+SDK regrava a sessão no credential store. No logout, a sincronização é parada,
+o logout remoto é tentado e a credencial local é removida.
 
-### Comandos assíncronos
+## Salas e timeline
 
-Superfície inicial, expressa conceitualmente:
+`SyncService` mantém o cliente sincronizado. `watch_rooms` projeta as salas
+já carregadas pelo cliente em `RoomSummary` e observa `rooms_stream` para
+publicar novos snapshots. `watch_timeline` cria uma timeline de alto nível do
+`matrix-sdk-ui`, envia o snapshot inicial e publica novos snapshots a cada
+atualização. Apenas itens de mensagens de texto são convertidos para
+`TimelineMessage`.
 
-| Operação | Entrada | Saída |
-| --- | --- | --- |
-| `initialize` | diretório da aplicação | estado inicial da sessão |
-| `login` | homeserver, ID e senha | resumo da sessão |
-| `restoreSession` | nenhuma | sessão restaurada ou ausência de sessão |
-| `logout` | nenhuma | conclusão |
-| `openRoom` | `roomId` | snapshot inicial da timeline |
-| `sendTextMessage` | `roomId`, texto e transaction ID | identificador local |
-| `closeRoom` | `roomId` | conclusão |
+O envio chama a timeline do SDK com `RoomMessageEventContent::text_plain`. A
+UI não implementa estados locais de `sending`, `sent` ou `failed`; essa é uma
+limitação registrada para evolução posterior.
 
-### Streams tipados
+## Segurança e erros
 
-| Stream | Conteúdo |
-| --- | --- |
-| `watchSession` | autenticando, autenticado, encerrando, desconectado, erro |
-| `watchSyncStatus` | iniciando, sincronizado, reconectando, erro recuperável |
-| `watchRooms` | snapshot/deltas de salas já ordenadas para apresentação |
-| `watchTimeline(roomId)` | snapshot/deltas e estado de envio das mensagens |
-
-O Flutter Rust Bridge converte structs e enums traduzíveis em
-objetos Dart normais e suporta streams Rust → Dart; isso permite uma API reativa
-sem callbacks Dart armazenados no Rust.
-
-## Fluxos principais
-
-### Inicialização e restauração
-
-1. Flutter inicializa o bridge e fornece o diretório privado da aplicação.
-2. Rust procura metadados de sessão no armazenamento seguro.
-3. Se não houver sessão, emite `disconnected`.
-4. Se houver, constrói o `Client` com o mesmo SQLite store usado no login.
-5. Rust restaura a sessão, inicia a sincronização e emite o snapshot de salas.
-6. Flutter troca a raiz da aplicação de login para conversas.
-
-É necessário reutilizar o mesmo store persistente. Caso contrário, o cliente restaurado não terá acesso ao estado das salas e às chaves de criptografia armazenadas anteriormente.
-
-### Login
-
-1. Flutter valida formato e presença dos campos (validação em UI).
-2. Rust normaliza/descobre o homeserver e constrói o `Client` persistente.
-3. Rust autentica com `matrix_auth().login_username(...)`.
-4. Rust persiste apenas os dados necessários à restauração.
-5. Rust executa a sincronização inicial.
-6. O stream de sessão libera a navegação para a lista de salas.
-
-**Senha nunca é persistida e nunca deve aparecer em logs.**
-
-### Seleção de sala e timeline
-
-1. Flutter envia `openRoom(roomId)`.
-2. Rust cria ou reutiliza uma timeline de alto nível.
-3. O snapshot inicial é enviado antes dos deltas subsequentes.
-4. Trocar de sala cancela a assinatura anterior no Flutter e libera o recurso no
-   Rust quando não houver consumidores.
-
-### Envio de mensagem
-
-1. Flutter gera um identificador local e envia texto normalizado.
-2. Rust valida sessão e sala.
-3. A mensagem entra na send queue/timeline como item local.
-4. Flutter apresenta imediatamente o estado `sending`.
-5. A timeline atualiza para `sent` ou `failed`, permitindo nova tentativa.
-
-## Sincronização e concorrência
-
-- Existe somente uma tarefa principal de sincronização por cliente.
-- O `MatrixClientService` é o único dono das tasks e de seus tokens de
-  cancelamento.
-- O logout cancela streams/tasks antes de remover segredos e store.
-- Reentrada de login enquanto já autenticado retorna erro controlado.
-- Deltas carregam identificadores estáveis para atualização incremental no Dart.
-- Backpressure deve ser tratado no Rust com snapshots compactados quando a UI não
-  acompanhar a taxa de eventos; a ponte não deve transportar eventos Matrix crus.
-
-## Erros
-
-O Rust converte falhas externas para os tipos de erros abaixo, de modo a serem tratados pela aplicação Flutter corretamente:
-
-- `invalidCredentials`
-- `invalidHomeserver`
-- `networkUnavailable`
-- `rateLimited(retryAfter)`
-- `sessionExpired`
-- `storageUnavailable`
-- `roomUnavailable`
-- `messageRejected`
-- `unexpected(correlationId)`
-
-Mensagens exibidas ao usuário são definidas no Flutter. Detalhes técnicos ficam
-em logs estruturados sem tokens, senhas ou conteúdo sensível.
+Erros externos são classificados no Rust e chegam ao Flutter como códigos de
+falha de autenticação. A tela mapeia esses códigos para mensagens em português,
+sem exibir textos brutos do SDK. Tokens, passphrase do store e senha não são
+enviados à UI, registrados em logs do projeto ou armazenados no Dart.
 
 ## Referências
 
-- [Matrix Rust SDK — visão geral](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk/index.html)
-- [Matrix Rust SDK UI — RoomListService](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk_ui/room_list_service/index.html)
-- [Matrix Rust SDK UI — Timeline](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk_ui/timeline/index.html)
-- [Restauração de sessão](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk/authentication/matrix/struct.MatrixAuth.html)
-- [Flutter Rust Bridge — tipos](https://cjycode.com/flutter_rust_bridge/guides/types/overview)
-- [Flutter Rust Bridge — streams](https://cjycode.com/flutter_rust_bridge/guides/types/translatable/stream)
-- [Flutter — guia de arquitetura](https://docs.flutter.dev/app-architecture/guide)
+- [Matrix Rust SDK](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk/index.html)
+- [Matrix SDK UI — SyncService](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk_ui/sync_service/index.html)
+- [Matrix SDK UI — Timeline](https://matrix-org.github.io/matrix-rust-sdk/matrix_sdk_ui/timeline/index.html)
+- [Flutter Rust Bridge](https://cjycode.com/flutter_rust_bridge/)

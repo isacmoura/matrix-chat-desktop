@@ -1,69 +1,51 @@
 # Estratégia de testes
 
-## Objetivo
+## Critério adotado
 
-Este documento descreve a estratégia de testes utilizada neste projeto. Dada a limitação de tempo, a estratégia prioriza os riscos reais do fluxo obrigatório, em vez de buscar uma alta cobertura de testes que talvez não agreguem valor proporcional.
+O desafio prioriza os fluxos de maior risco: fronteira Flutter–Rust,
+autenticação, persistência de sessão e comportamento da interface. A suíte não
+usa uma conta Matrix nem um homeserver externo; por isso, não substitui a
+validação manual ponta a ponta descrita nas limitações.
 
-A prioridade é provar que a fronteira Flutter–Rust é estável, que sessão e
-sincronização têm estados previsíveis e que o fluxo obrigatório funciona.
+## Cobertura implementada
 
-## Camadas
+### Rust
 
-### Rust — testes unitários
+- Validação de campos de login sem chamada de rede.
+- Classificação de falhas de autenticação sem expor detalhes sensíveis.
+- Serialização dos dados necessários para restaurar uma sessão.
+- Geração de passphrase do store local.
+- DTO de salas e contrato de status da ponte.
 
-- Conversão de eventos/salas do SDK para DTOs da aplicação.
-- Taxonomia de erros, incluindo dados que nunca podem aparecer em mensagens/logs.
-- Regras de ciclo de vida do `MatrixClientService`.
-- Validação e normalização de homeserver/identificadores.
-- Persistência e limpeza de metadados de sessão usando diretório temporário.
-- Estado local de envio: `sending`, `sent`, `failed` e retry.
+### Flutter
 
-### Contrato Flutter–Rust
+- `AuthCubit`: inicialização, restauração, login, erro, proteção contra login
+  concorrente e logout.
+- Widgets: validação do formulário, limpeza da senha, progresso, erro de
+  autenticação, restauração e logout.
+- Repositórios usam `FakeMatrixGateway`; os testes de UI não dependem de rede,
+  Keychain ou FFI.
 
-- Compilação do código gerado em CI.
-- Round-trip dos DTOs e enums expostos.
-- Propagação de `Result` Rust para erros tipados no Dart.
-- Streams encerram/cancelam sem eventos posteriores.
-- Smoke test nativo garantindo que Flutter chama uma operação Rust real.
+### Integração nativa
 
-### Dart — testes unitários
+O smoke test em `integration_test/bridge_test.dart` inicializa o Rust por meio
+do Flutter Rust Bridge, lê as versões do Matrix SDK e verifica a transição
+inicial do stream de autenticação.
 
-- `AuthCubit/ViewModel`: login, restauração, erro e logout.
-- `RoomsCubit/ViewModel`: snapshots, deltas, seleção e busca local.
-- `TimelineCubit/ViewModel`: troca de sala, cancelamento de stream, envio e retry.
-- Repositórios com um `FakeMatrixGateway`, sem FFI.
+## Comandos
 
-### Flutter — widget tests
+```shell
+fvm flutter analyze
+fvm flutter test
+fvm flutter test integration_test/bridge_test.dart -d macos
+PATH="/opt/homebrew/opt/rustup/bin:$PATH" cargo fmt --manifest-path rust/Cargo.toml -- --check
+PATH="/opt/homebrew/opt/rustup/bin:$PATH" cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings
+PATH="/opt/homebrew/opt/rustup/bin:$PATH" cargo test --manifest-path rust/Cargo.toml
+```
 
-- Formulário de login e mensagens de erro.
-- Lista de salas, seleção e indicador de não lidas.
-- Timeline nos estados loading, vazia, conteúdo e reconectando.
-- Composer desabilitado sem sala e envio por botão/Enter.
-- Mensagem local nos estados de envio e falha.
-- Logout retornando ao login.
+## Próximas validações recomendadas
 
-### Integração
-
-Um único fluxo principal obrigatório:
-
-1. Inicializar com gateway falso determinístico.
-2. Fazer login.
-3. Receber e selecionar uma sala.
-4. Receber mensagens.
-5. Enviar uma mensagem e observar `sending → sent`.
-6. Fazer logout.
-
-## Verificações estáticas
-
-- `flutter analyze`
-- `flutter test`
-- `cargo fmt --check`
-- `cargo clippy --all-targets --all-features -- -D warnings`
-- `cargo test`
-- verificação de que o código FRB gerado está atualizado
-
-## Referências
-
-- [Flutter — visão geral de testes](https://docs.flutter.dev/testing/overview)
-- [Flutter — testes de integração](https://docs.flutter.dev/testing/integration-tests)
-- [Flutter — testes de plugins](https://docs.flutter.dev/testing/testing-plugins)
+1. Usar uma conta Matrix exclusiva de teste para login, reinício, restauração,
+   lista de salas, leitura e envio.
+2. Adicionar testes dos cubits de salas/timeline e de falha no envio.
+3. Executar a mesma matriz no Windows e Linux em CI.
