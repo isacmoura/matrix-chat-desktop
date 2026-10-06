@@ -19,11 +19,16 @@ podem ficar indisponíveis.
   sistema operacional.
 - A passphrase do SQLite store também fica no credential store.
 - Senhas de usuário existem apenas em memória durante o login.
+- A implementação usa a crate `keyring`, que no macOS delega o armazenamento
+  seguro ao Keychain. Windows e Linux dependem, respectivamente, dos backends
+  Credential Manager e Secret Service disponibilizados pela crate.
 - Se o credential store não estiver disponível, o aplicativo não oferece
   restauração persistente; exige novo login em vez de gravar segredos sem
   proteção.
 - Logout cancela sincronização, revoga/encerra a sessão quando possível, remove
-  credenciais locais e elimina o store daquela conta de forma controlada.
+  as credenciais locais. A remoção física do SQLite será tratada por um fluxo
+  explícito de limpeza da conta; sem a passphrase removida, o store não pode ser
+  reaberto pela aplicação.
 
 ## Consequências
 
@@ -37,4 +42,5 @@ podem ficar indisponíveis.
 
 - Integração com macOS Keychain, Windows Credential Manager e Secret Service do
   Linux precisa ser validada por plataforma.
-- Logout e remoção de store exigem tratamento cuidadoso de arquivos em uso.
+- Uma futura limpeza física do store exige tratamento cuidadoso de arquivos em
+  uso.

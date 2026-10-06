@@ -6,8 +6,13 @@
 - [x] Projeto Flutter/Rust.
 - [x] Integração Flutter Rust Bridge validada no macOS.
 - [x] Compatibilidade entre `matrix-sdk` e `matrix-sdk-ui` validada.
-- [ ] Login real no Matrix.
-- [ ] Persistência/restauração real de sessão.
+- [x] Camada Rust de autenticação por senha, persistência segura e restauração
+  implementada.
+- [x] Autenticação integrada ao Flutter (`MatrixGateway`, `AuthRepository`,
+  `AuthCubit`, tela de login, restauração na inicialização e logout).
+- [ ] Login real contra um homeserver Matrix de teste.
+- [ ] Validação do Keychain e dos backends Windows/Linux em execução de ponta a
+  ponta.
 - [ ] Lista de salas e timeline reais.
 - [ ] Envio real de mensagens.
 - [x] Testes automatizados iniciais em Flutter e Rust.

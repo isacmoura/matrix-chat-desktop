@@ -15,6 +15,8 @@ dependencies:
   matrix_desktop_rust:
     path: rust_builder
   flutter_rust_bridge: 2.12.0
+  flutter_bloc: ^8.1.6
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:

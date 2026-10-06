@@ -3,7 +3,10 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/auth.dart';
 import 'api/health.dart';
+import 'api/rooms.dart';
+import 'api/timeline.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
@@ -22,6 +25,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException dco_decode_AnyhowException(dynamic raw);
 
   @protected
+  RustStreamSink<AuthState> dco_decode_StreamSink_auth_state_Sse(dynamic raw);
+
+  @protected
+  RustStreamSink<List<RoomSummary>> dco_decode_StreamSink_list_room_summary_Sse(
+      dynamic raw);
+
+  @protected
+  RustStreamSink<List<TimelineMessage>>
+      dco_decode_StreamSink_list_timeline_message_Sse(dynamic raw);
+
+  @protected
   RustStreamSink<MatrixSdkVersions>
       dco_decode_StreamSink_matrix_sdk_versions_Sse(dynamic raw);
 
@@ -29,10 +43,66 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AuthFailure dco_decode_auth_failure(dynamic raw);
+
+  @protected
+  AuthFailureCode dco_decode_auth_failure_code(dynamic raw);
+
+  @protected
+  AuthPhase dco_decode_auth_phase(dynamic raw);
+
+  @protected
+  AuthState dco_decode_auth_state(dynamic raw);
+
+  @protected
+  AuthenticatedSession dco_decode_authenticated_session(dynamic raw);
+
+  @protected
+  bool dco_decode_bool(dynamic raw);
+
+  @protected
+  AuthFailure dco_decode_box_autoadd_auth_failure(dynamic raw);
+
+  @protected
+  AuthenticatedSession dco_decode_box_autoadd_authenticated_session(
+      dynamic raw);
+
+  @protected
+  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
+
+  @protected
+  int dco_decode_i_32(dynamic raw);
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<RoomSummary> dco_decode_list_room_summary(dynamic raw);
+
+  @protected
+  List<TimelineMessage> dco_decode_list_timeline_message(dynamic raw);
+
+  @protected
   MatrixSdkVersions dco_decode_matrix_sdk_versions(dynamic raw);
+
+  @protected
+  AuthFailure? dco_decode_opt_box_autoadd_auth_failure(dynamic raw);
+
+  @protected
+  AuthenticatedSession? dco_decode_opt_box_autoadd_authenticated_session(
+      dynamic raw);
+
+  @protected
+  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
+
+  @protected
+  RoomSummary dco_decode_room_summary(dynamic raw);
+
+  @protected
+  TimelineMessage dco_decode_timeline_message(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -44,6 +114,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
+  RustStreamSink<AuthState> sse_decode_StreamSink_auth_state_Sse(
+      SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<List<RoomSummary>> sse_decode_StreamSink_list_room_summary_Sse(
+      SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<List<TimelineMessage>>
+      sse_decode_StreamSink_list_timeline_message_Sse(
+          SseDeserializer deserializer);
+
+  @protected
   RustStreamSink<MatrixSdkVersions>
       sse_decode_StreamSink_matrix_sdk_versions_Sse(
           SseDeserializer deserializer);
@@ -52,11 +135,70 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AuthFailure sse_decode_auth_failure(SseDeserializer deserializer);
+
+  @protected
+  AuthFailureCode sse_decode_auth_failure_code(SseDeserializer deserializer);
+
+  @protected
+  AuthPhase sse_decode_auth_phase(SseDeserializer deserializer);
+
+  @protected
+  AuthState sse_decode_auth_state(SseDeserializer deserializer);
+
+  @protected
+  AuthenticatedSession sse_decode_authenticated_session(
+      SseDeserializer deserializer);
+
+  @protected
+  bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
+  AuthFailure sse_decode_box_autoadd_auth_failure(SseDeserializer deserializer);
+
+  @protected
+  AuthenticatedSession sse_decode_box_autoadd_authenticated_session(
+      SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<RoomSummary> sse_decode_list_room_summary(SseDeserializer deserializer);
+
+  @protected
+  List<TimelineMessage> sse_decode_list_timeline_message(
+      SseDeserializer deserializer);
 
   @protected
   MatrixSdkVersions sse_decode_matrix_sdk_versions(
       SseDeserializer deserializer);
+
+  @protected
+  AuthFailure? sse_decode_opt_box_autoadd_auth_failure(
+      SseDeserializer deserializer);
+
+  @protected
+  AuthenticatedSession? sse_decode_opt_box_autoadd_authenticated_session(
+      SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
+
+  @protected
+  RoomSummary sse_decode_room_summary(SseDeserializer deserializer);
+
+  @protected
+  TimelineMessage sse_decode_timeline_message(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -65,14 +207,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
-
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
-
-  @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_auth_state_Sse(
+      RustStreamSink<AuthState> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_list_room_summary_Sse(
+      RustStreamSink<List<RoomSummary>> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_list_timeline_message_Sse(
+      RustStreamSink<List<TimelineMessage>> self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_matrix_sdk_versions_Sse(
@@ -82,24 +230,83 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_auth_failure(AuthFailure self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_failure_code(
+      AuthFailureCode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_phase(AuthPhase self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_auth_state(AuthState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_authenticated_session(
+      AuthenticatedSession self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_auth_failure(
+      AuthFailure self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_authenticated_session(
+      AuthenticatedSession self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_i_64(
+      PlatformInt64 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_room_summary(
+      List<RoomSummary> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_timeline_message(
+      List<TimelineMessage> self, SseSerializer serializer);
 
   @protected
   void sse_encode_matrix_sdk_versions(
       MatrixSdkVersions self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_auth_failure(
+      AuthFailure? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_authenticated_session(
+      AuthenticatedSession? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_i_64(
+      PlatformInt64? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_room_summary(RoomSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_timeline_message(
+      TimelineMessage self, SseSerializer serializer);
+
+  @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
 }
 
 // Section: wire_class
